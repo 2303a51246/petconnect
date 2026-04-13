@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Listings — Admin PetConnect</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<%- include('../partials/nav') %>
+<%- include('../partials/flash') %>
+<div class="container">
+  <div class="page">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem;">
+      <div class="page-title" style="margin-bottom:0;"><i class="fas fa-list"></i> All Listings (<%= listings.length %>)</div>
+      <a href="/admin" class="btn btn-gray btn-sm"><i class="fas fa-arrow-left"></i> Dashboard</a>
+    </div>
+    <div class="card-white" style="overflow-x:auto;">
+      <table class="dtable">
+        <thead><tr><th>Img</th><th>Title</th><th>Cat</th><th>Price</th><th>Type</th><th>Seller</th><th>Views</th><th>Status</th><th>⭐</th><th>Actions</th></tr></thead>
+        <tbody>
+          <% if(listings.length===0){ %><tr><td colspan="10" style="text-align:center;padding:2rem;color:var(--g500);">No listings.</td></tr><% } %>
+          <% listings.forEach(l=>{ %>
+          <tr>
+            <td><div style="width:44px;height:38px;border-radius:var(--r2);overflow:hidden;background:var(--g100);display:flex;align-items:center;justify-content:center;font-size:1.2rem;"><% if(l.images&&l.images[0]){ %><img src="/uploads/<%= l.images[0] %>" style="width:100%;height:100%;object-fit:cover;"><% }else{ %>🐾<% } %></div></td>
+            <td style="max-width:160px;"><a href="/pets/<%= l._id %>" style="font-weight:600;color:var(--primary);font-size:.82rem;"><%= l.title.substring(0,32) %><%= l.title.length>32?'...':'' %></a><br><small style="color:var(--g500);"><%= l.city %></small></td>
+            <td><%= l.category %></td>
+            <td style="font-weight:700;font-size:.85rem;"><%= l.priceType==='Free'?'FREE':'₹'+l.price.toLocaleString('en-IN') %></td>
+            <td><span class="ttag ttag-<%= l.listingType.toLowerCase() %>" style="position:static;font-size:.65rem;padding:.15rem .45rem;border-radius:3px;"><%= l.listingType %></span></td>
+            <td style="font-size:.82rem;"><%= l.seller?l.seller.name:'—' %><br><small style="color:var(--g500)"><%= l.seller?l.seller.email:'' %></small></td>
+            <td style="text-align:center;"><%= l.views||0 %></td>
+            <td><span class="badge b-<%= l.status.toLowerCase() %>"><%= l.status %></span></td>
+            <td style="text-align:center;"><% if(l.featured){ %><i class="fas fa-star" style="color:var(--yellow);"></i><% }else{ %><i class="far fa-star" style="color:var(--g300);"></i><% } %></td>
+            <td>
+              <div style="display:flex;gap:.3rem;">
+                <form action="/admin/listings/<%= l._id %>/feature" method="POST" style="margin:0;"><button type="submit" class="btn btn-sm" style="background:var(--g100);color:var(--g700);padding:.3rem .6rem;" title="Toggle Featured"><i class="fas fa-star"></i></button></form>
+                <form action="/admin/listings/<%= l._id %>/delete" method="POST" style="margin:0;"><button type="submit" class="btn btn-red btn-sm" style="padding:.3rem .6rem;" data-confirm="Delete this listing?"><i class="fas fa-trash"></i></button></form>
+              </div>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script src="/js/main.js"></script>
+</body>
+</html>

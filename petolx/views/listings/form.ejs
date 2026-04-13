@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %> — PetConnect</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<%- include('../partials/nav') %>
+<%- include('../partials/flash') %>
+
+<div class="container">
+  <div class="page" style="max-width:860px;margin-left:auto;margin-right:auto;">
+
+    <div class="page-title"><i class="fas fa-<%= listing?'edit':'plus-circle' %>" style="color:var(--orange);"></i> <%= listing?'Edit Your Ad':'Post a New Ad' %></div>
+
+    <form action="<%= action %>" method="POST" enctype="multipart/form-data">
+
+      <!-- SECTION 1: Photos -->
+      <div class="fcard">
+        <div class="fsect-title">Photos <span style="color:var(--g500);font-weight:400;font-size:.72rem;text-transform:none;">(up to 6, first photo is cover)</span></div>
+
+        <!-- Existing images (edit mode) -->
+        <% if(listing&&listing.images&&listing.images.length>0){ %>
+        <div style="margin-bottom:.75rem;">
+          <div style="font-size:.78rem;font-weight:600;color:var(--g700);margin-bottom:.4rem;">Current Photos — check box to remove:</div>
+          <div class="existing-imgs">
+            <% listing.images.forEach(img=>{ %>
+            <div class="eimg">
+              <img src="/uploads/<%= img %>" alt="">
+              <label title="Remove this photo">
+                <input type="checkbox" name="removeImages" value="<%= img %>">
+                <i class="fas fa-times"></i>
+              </label>
+            </div>
+            <% }) %>
+          </div>
+        </div>
+        <% } %>
+
+        <!-- Upload new -->
+        <div class="img-upload" onclick="document.getElementById('imgInput').click()">
+          <input type="file" name="images" id="imgInput" multiple accept="image/*">
+          <div class="ui-icon">📷</div>
+          <p><strong>Click to upload photos</strong></p>
+          <p>JPG, PNG, WEBP · Max 5MB each · Up to 6 photos</p>
+        </div>
+        <div class="img-grid" id="imgGrid"></div>
+      </div>
+
+      <!-- SECTION 2: Listing Type -->
+      <div class="fcard">
+        <div class="fsect-title">What are you doing?</div>
+        <div style="display:flex;gap:1rem;flex-wrap:wrap;">
+          <label class="fcheck" style="font-size:.95rem;font-weight:700;">
+            <input type="radio" name="listingType" value="Sell" <%= !listing||listing.listingType==='Sell'?'checked':'' %> style="width:18px;height:18px;">
+            💰 Selling my pet
+          </label>
+          <label class="fcheck" style="font-size:.95rem;font-weight:700;">
+            <input type="radio" name="listingType" value="Adopt" <%= listing&&listing.listingType==='Adopt'?'checked':'' %> style="width:18px;height:18px;">
+            🤍 Giving for adoption (Free)
+          </label>
+        </div>
+      </div>
+
+      <!-- SECTION 3: Pet Details -->
+      <div class="fcard">
+        <div class="fsect-title">Pet Information</div>
+
+        <div class="fg">
+          <label class="fl">Ad Title *</label>
+          <input type="text" name="title" class="fc" placeholder="e.g. Friendly Labrador Puppy for Sale" maxlength="100" value="<%= listing?listing.title:'' %>" required>
+        </div>
+
+        <div class="frow">
+          <div class="fg">
+            <label class="fl">Category *</label>
+            <select name="category" class="fc" required>
+              <option value="">Select category...</option>
+              <% CATS.forEach(c=>{ %><option value="<%= c %>" <%= listing&&listing.category===c?'selected':'' %>><%= c %></option><% }) %>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl">Breed *</label>
+            <input type="text" name="breed" class="fc" placeholder="e.g. Labrador Retriever" value="<%= listing?listing.breed:'' %>" required>
+          </div>
+        </div>
+
+        <div class="frow3">
+          <div class="fg">
+            <label class="fl">Age *</label>
+            <input type="number" name="age" class="fc" placeholder="e.g. 3" value="<%= listing?listing.age:'' %>" min="0" step="0.5" required>
+          </div>
+          <div class="fg">
+            <label class="fl">Age Unit</label>
+            <select name="ageUnit" class="fc">
+              <% ['Days','Weeks','Months','Years'].forEach(u=>{ %><option value="<%= u %>" <%= listing&&listing.ageUnit===u?'selected':'' %>><%= u %></option><% }) %>
+            </select>
+          </div>
+          <div class="fg">
+            <label class="fl">Gender</label>
+            <select name="gender" class="fc">
+              <% ['Male','Female','Unknown'].forEach(g=>{ %><option value="<%= g %>" <%= listing&&listing.gender===g?'selected':'' %>><%= g %></option><% }) %>
+            </select>
+          </div>
+        </div>
+
+        <div class="fg">
+          <label class="fl">Color / Markings</label>
+          <input type="text" name="color" class="fc" placeholder="e.g. Golden, Black & White" value="<%= listing?listing.color||'':'' %>">
+        </div>
+      </div>
+
+      <!-- SECTION 4: Price -->
+      <div class="fcard">
+        <div class="fsect-title">Price</div>
+        <div class="frow">
+          <div class="fg">
+            <label class="fl">Price Type</label>
+            <select name="priceType" class="fc" id="priceType">
+              <option value="Fixed" <%= !listing||listing.priceType==='Fixed'?'selected':'' %>>Fixed Price</option>
+              <option value="Negotiable" <%= listing&&listing.priceType==='Negotiable'?'selected':'' %>>Negotiable</option>
+              <option value="Free" <%= listing&&listing.priceType==='Free'?'selected':'' %>>Free / Adoption</option>
+            </select>
+          </div>
+          <div class="fg" id="priceField">
+            <label class="fl">Price (₹)</label>
+            <input type="number" name="price" class="fc" placeholder="e.g. 15000" value="<%= listing?listing.price:'' %>" min="0">
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 5: Health -->
+      <div class="fcard">
+        <div class="fsect-title">Health & Documents</div>
+        <div style="display:flex;gap:2rem;flex-wrap:wrap;">
+          <label class="fcheck">
+            <input type="checkbox" name="vaccinated" <%= listing&&listing.vaccinated?'checked':'' %>>
+            <span><i class="fas fa-syringe" style="color:var(--green);"></i> Vaccinated</span>
+          </label>
+          <label class="fcheck">
+            <input type="checkbox" name="dewormed" <%= listing&&listing.dewormed?'checked':'' %>>
+            <span><i class="fas fa-shield-virus" style="color:var(--blue);"></i> Dewormed</span>
+          </label>
+          <label class="fcheck">
+            <input type="checkbox" name="pedigree" <%= listing&&listing.pedigree?'checked':'' %>>
+            <span><i class="fas fa-certificate" style="color:var(--orange);"></i> Pedigree / KCI Registered</span>
+          </label>
+        </div>
+      </div>
+
+      <!-- SECTION 6: Location -->
+      <div class="fcard">
+        <div class="fsect-title">Location</div>
+        <div class="frow">
+          <div class="fg">
+            <label class="fl">City *</label>
+            <input type="text" name="city" class="fc" placeholder="e.g. Hyderabad" value="<%= listing?listing.city:currentUser?currentUser.city:'' %>" required>
+          </div>
+          <div class="fg">
+            <label class="fl">State *</label>
+            <select name="state" class="fc" required>
+              <option value="">Select state...</option>
+              <% STATES.forEach(s=>{ %><option value="<%= s %>" <%= listing&&listing.state===s?'selected':(currentUser&&currentUser.state===s?'selected':'') %>><%= s %></option><% }) %>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- SECTION 7: Description -->
+      <div class="fcard">
+        <div class="fsect-title">Description *</div>
+        <div class="fg">
+          <textarea name="description" class="fc" rows="6" maxlength="2000"
+            placeholder="Tell buyers about the pet's personality, daily routine, diet, reason for selling/giving up, what's included (vaccinations card, food, toys, cage)..." required><%= listing?listing.description:'' %></textarea>
+          <div style="font-size:.75rem;color:var(--g500);margin-top:.3rem;">Max 2000 characters. More detail = more interest!</div>
+        </div>
+      </div>
+
+      <!-- Status (edit only) -->
+      <% if(listing){ %>
+      <div class="fcard">
+        <div class="fsect-title">Ad Status</div>
+        <select name="status" class="fc">
+          <option value="Active" <%= listing.status==='Active'?'selected':'' %>>Active (visible to buyers)</option>
+          <option value="Sold" <%= listing.status==='Sold'?'selected':'' %>>Sold</option>
+          <option value="Adopted" <%= listing.status==='Adopted'?'selected':'' %>>Adopted</option>
+        </select>
+      </div>
+      <% } %>
+
+      <!-- Submit -->
+      <div style="display:flex;gap:1rem;justify-content:flex-end;flex-wrap:wrap;">
+        <a href="<%= listing?'/pets/'+listing._id:'/my-ads' %>" class="btn btn-gray">Cancel</a>
+        <button type="submit" class="btn btn-orange btn-lg">
+          <i class="fas fa-<%= listing?'save':'bullhorn' %>"></i>
+          <%= listing?'Save Changes':'Post Ad Now' %>
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+
+<script src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+<div class="flash-wrap">
+  <% if(success&&success.length>0) success.forEach(m=>{ %><div class="fl-msg fl-success"><i class="fas fa-check-circle"></i> <%- m %></div><% }) %>
+  <% if(error&&error.length>0) error.forEach(m=>{ %><div class="fl-msg fl-error"><i class="fas fa-times-circle"></i> <%- m %></div><% }) %>
+</div>

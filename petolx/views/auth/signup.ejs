@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account — PetConnect</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<%- include('../partials/flash') %>
+<div class="auth-page">
+  <div class="auth-card" style="max-width:480px;">
+    <div class="auth-logo">
+      <a href="/" class="logo" style="justify-content:center;font-size:1.8rem;">Pet<span>Connect</span></a>
+      <p>Join thousands of pet lovers</p>
+    </div>
+
+    <form action="/signup" method="POST">
+      <div class="frow">
+        <div class="fg">
+          <label class="fl">Full Name *</label>
+          <input type="text" name="name" class="fc" placeholder="Your full name" required>
+        </div>
+        <div class="fg">
+          <label class="fl">Phone Number</label>
+          <input type="text" name="phone" class="fc" placeholder="+91 98765 43210">
+        </div>
+      </div>
+      <div class="fg">
+        <label class="fl">Email Address *</label>
+        <input type="email" name="email" class="fc" placeholder="you@example.com" required>
+      </div>
+      <div class="frow">
+        <div class="fg">
+          <label class="fl">Password * <span style="font-weight:400;font-size:.72rem;">(min 6 chars)</span></label>
+          <input type="password" name="password" class="fc" placeholder="Create password" required>
+        </div>
+        <div class="fg">
+          <label class="fl">Confirm Password *</label>
+          <input type="password" name="confirm" class="fc" placeholder="Repeat password" required>
+        </div>
+      </div>
+      <div class="frow">
+        <div class="fg">
+          <label class="fl">City</label>
+          <input type="text" name="city" class="fc" placeholder="e.g. Hyderabad">
+        </div>
+        <div class="fg">
+          <label class="fl">State</label>
+          <input type="text" name="state" class="fc" placeholder="e.g. Telangana">
+        </div>
+      </div>
+      <button type="submit" class="btn btn-orange btn-block btn-lg">
+        <i class="fas fa-user-plus"></i> Create Account
+      </button>
+    </form>
+
+    <div class="hr"></div>
+    <p style="text-align:center;font-size:.88rem;color:var(--g500);">
+      Already have an account?
+      <a href="/login" style="color:var(--primary);font-weight:700;">Login</a>
+    </p>
+  </div>
+</div>
+<script src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chat — PetConnect</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<%- include('../partials/nav') %>
+<%- include('../partials/flash') %>
+
+<div class="container">
+  <div class="page" style="max-width:700px;margin-left:auto;margin-right:auto;">
+
+    <!-- Back + listing context -->
+    <a href="/chat" style="font-size:.82rem;color:var(--g500);display:inline-flex;align-items:center;gap:.35rem;margin-bottom:.85rem;font-weight:600;">
+      <i class="fas fa-arrow-left"></i> All Messages
+    </a>
+
+    <!-- Listing strip -->
+    <div style="background:#fff;border-radius:var(--r);padding:.75rem 1rem;margin-bottom:1rem;box-shadow:var(--shadow0);display:flex;align-items:center;gap:.75rem;border:1px solid var(--g200);">
+      <div style="width:48px;height:40px;border-radius:var(--r2);overflow:hidden;background:var(--g100);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">
+        <% if(listing.images&&listing.images[0]){ %><img src="/uploads/<%= listing.images[0] %>" style="width:100%;height:100%;object-fit:cover;"><% }else{ %>🐾<% } %>
+      </div>
+      <div style="flex:1;min-width:0;">
+        <a href="/pets/<%= listing._id %>" style="font-weight:700;font-size:.88rem;color:var(--primary);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block;"><%= listing.title %></a>
+        <span class="badge b-<%= listing.status.toLowerCase() %>" style="font-size:.65rem;"><%= listing.status %></span>
+      </div>
+      <a href="/pets/<%= listing._id %>" class="btn btn-gray btn-sm">View Ad</a>
+    </div>
+
+    <!-- Chat Window -->
+    <div class="chat-window">
+      <!-- Header -->
+      <div class="cwin-head">
+        <div class="cavatar" style="width:36px;height:36px;font-size:.9rem;"><%= otherUser.name.charAt(0).toUpperCase() %></div>
+        <div>
+          <div style="font-weight:700;font-size:.92rem;"><%= otherUser.name %></div>
+          <div style="font-size:.72rem;opacity:.7;"><%= otherUser.city||'PetConnect User' %></div>
+        </div>
+      </div>
+
+      <!-- Messages -->
+      <div class="cwin-msgs" id="chatMsgs">
+        <% if(messages.length===0){ %>
+        <div style="text-align:center;color:var(--g500);font-size:.85rem;padding:2rem;">Start the conversation! 👋</div>
+        <% }else{ %>
+        <% messages.forEach(m=>{ %>
+        <div style="display:flex;flex-direction:column;align-items:<%= m.sender.toString()===me?'flex-end':'flex-start' %>;">
+          <div class="cbubble <%= m.sender.toString()===me?'bme':'bthem' %>">
+            <%= m.text %>
+            <div class="btime">
+              <%= new Date(m.createdAt).toLocaleTimeString('en-IN',{hour:'2-digit',minute:'2-digit'}) %>
+              <% if(m.sender.toString()===me){ %>
+                <i class="fas fa-check<%= m.read?'-double':'' %>"></i>
+              <% } %>
+            </div>
+          </div>
+        </div>
+        <% }) %>
+        <% } %>
+      </div>
+
+      <!-- Input -->
+      <form class="cwin-input" action="/chat/<%= listing._id %>/<%= otherUser._id %>" method="POST">
+        <input type="text" name="text" placeholder="Type a message..." autocomplete="off" required autofocus>
+        <button type="submit" class="btn btn-primary" style="border-radius:50%;width:40px;height:40px;padding:0;flex-shrink:0;"><i class="fas fa-paper-plane"></i></button>
+      </form>
+    </div>
+
+  </div>
+</div>
+<script src="/js/main.js"></script>
+</body>
+</html>

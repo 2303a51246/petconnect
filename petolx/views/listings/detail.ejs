@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    .lightbox{display:none;position:fixed;inset:0;background:rgba(0,0,0,.93);z-index:9999;align-items:center;justify-content:center;}
+    .lightbox.open{display:flex;}
+    .lb-img{max-width:90vw;max-height:85vh;object-fit:contain;border-radius:8px;user-select:none;pointer-events:none;}
+    .lb-close{position:absolute;top:1rem;right:1.25rem;color:#fff;font-size:2.2rem;cursor:pointer;background:none;border:none;line-height:1;opacity:.8;}
+    .lb-close:hover{opacity:1;color:var(--orange);}
+    .lb-arrow{position:absolute;top:50%;transform:translateY(-50%);background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.2);color:#fff;font-size:1.4rem;width:50px;height:50px;border-radius:50%;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;}
+    .lb-arrow:hover{background:rgba(255,255,255,.3);}
+    .lb-prev{left:1rem;}.lb-next{right:1rem;}
+    .lb-counter{position:absolute;bottom:1.25rem;left:50%;transform:translateX(-50%);color:rgba(255,255,255,.65);font-size:.85rem;font-weight:600;background:rgba(0,0,0,.4);padding:.3rem .8rem;border-radius:20px;}
+    .gal-main{position:relative;height:360px;background:var(--g100);display:flex;align-items:center;justify-content:center;font-size:7rem;overflow:hidden;}
+    .gal-main img{width:100%;height:100%;object-fit:cover;cursor:pointer;transition:transform .3s;}
+    .gal-main:hover img{transform:scale(1.02);}
+    .garr{position:absolute;top:50%;transform:translateY(-50%);background:rgba(0,0,0,.45);color:#fff;border:none;width:40px;height:40px;border-radius:50%;font-size:1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:.2s;z-index:2;}
+    .garr:hover{background:rgba(0,0,0,.72);}
+    #galPrevBtn{left:.65rem;}#galNextBtn{right:.65rem;}
+    .gal-expand{position:absolute;bottom:.65rem;right:.65rem;background:rgba(0,0,0,.55);color:#fff;border:none;border-radius:var(--r2);padding:.3rem .65rem;font-size:.75rem;cursor:pointer;display:flex;align-items:center;gap:.3rem;}
+    .gal-dots{display:flex;justify-content:center;gap:.4rem;padding:.55rem;}
+    .gdot{width:8px;height:8px;border-radius:50%;background:var(--g300);cursor:pointer;border:none;transition:.2s;}
+    .gdot.on{background:var(--primary);transform:scale(1.25);}
+  </style>
+</head>
+<body>
+<%- include('../partials/nav') %>
+<%- include('../partials/flash') %>
+
+<!-- LIGHTBOX -->
+<div class="lightbox" id="lightbox">
+  <button class="lb-close" id="lbClose">&#215;</button>
+  <button class="lb-arrow lb-prev" id="lbPrev"><i class="fas fa-chevron-left"></i></button>
+  <img class="lb-img" id="lbImg" src="" alt="Pet photo">
+  <button class="lb-arrow lb-next" id="lbNext"><i class="fas fa-chevron-right"></i></button>
+  <div class="lb-counter" id="lbCounter"></div>
+</div>
+
+<div class="container">
+  <div class="page">
+
+    <!-- Breadcrumb -->
+    <div style="font-size:.8rem;color:var(--g500);margin-bottom:1rem;display:flex;align-items:center;gap:.4rem;flex-wrap:wrap;">
+      <a href="/" style="color:var(--primary);">Home</a>
+      <i class="fas fa-chevron-right" style="font-size:.65rem;"></i>
+      <a href="/?category=<%= listing.category %>" style="color:var(--primary);"><%= listing.category %>s</a>
+      <i class="fas fa-chevron-right" style="font-size:.65rem;"></i>
+      <span><%= listing.title.substring(0,40) %><%= listing.title.length>40?'...':'' %></span>
+    </div>
+
+    <div class="detail-wrap">
+
+      <!-- ── LEFT COLUMN ── -->
+      <div>
+
+        <!-- Gallery -->
+        <div class="gallery">
+          <% if(listing.images && listing.images.length > 0){ %>
+          <div class="gal-main">
+            <img id="galMainImg" src="/uploads/<%= listing.images[0] %>" alt="<%= listing.title %>" onclick="openLightbox(currentIdx)">
+            <% if(listing.images.length > 1){ %>
+            <button class="garr" id="galPrevBtn"><i class="fas fa-chevron-left"></i></button>
+            <button class="garr" id="galNextBtn"><i class="fas fa-chevron-right"></i></button>
+            <% } %>
+            <button class="gal-expand" onclick="openLightbox(currentIdx)"><i class="fas fa-expand"></i> Full View</button>
+          </div>
+          <% if(listing.images.length > 1){ %>
+          <div class="gal-dots" id="galDots">
+            <% listing.images.forEach((img,i)=>{ %>
+            <button class="gdot <%= i===0?'on':'' %>" data-i="<%= i %>"></button>
+            <% }) %>
+          </div>
+          <div class="thumbs">
+            <% listing.images.forEach((img,i)=>{ %>
+            <div class="thumb <%= i===0?'on':'' %>" data-i="<%= i %>" data-src="/uploads/<%= img %>">
+              <img src="/uploads/<%= img %>" alt="">
+            </div>
+            <% }) %>
+          </div>
+          <% } %>
+          <% } else { %>
+          <div class="gal-main" style="cursor:default;">
+            <span><%= CAT_EMOJI[listing.category]||'🐾' %></span>
+          </div>
+          <% } %>
+        </div>
+
+        <!-- Info Card -->
+        <div class="det-info">
+          <div class="det-price <%= listing.priceType==='Free'?'fp':'' %>">
+            <%= listing.priceType==='Free' ? '🤍 FREE / ADOPT' : '₹'+listing.price.toLocaleString('en-IN') %>
+            <% if(listing.priceType==='Negotiable'){ %><span style="font-size:.82rem;color:var(--g500);font-weight:600;"> (Negotiable)</span><% } %>
+          </div>
+          <div class="det-title"><%= listing.title %></div>
+          <div class="det-loc"><i class="fas fa-map-marker-alt"></i> <%= listing.city %>, <%= listing.state %></div>
+
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem;">
+            <span class="badge b-<%= listing.status.toLowerCase() %>"><%= listing.status %></span>
+            <span class="ttag ttag-<%= listing.listingType.toLowerCase() %>" style="position:static;font-size:.72rem;padding:.2rem .6rem;border-radius:3px;"><%= listing.listingType %></span>
+            <% if(listing.featured){ %><span style="background:var(--yellow);color:var(--g900);font-size:.72rem;padding:.2rem .6rem;border-radius:3px;font-weight:800;">⭐ FEATURED</span><% } %>
+          </div>
+
+          <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--g500);margin-bottom:.6rem;">Pet Details</div>
+          <div class="det-grid">
+            <div class="det-item"><label>Category</label><span><%= listing.category %></span></div>
+            <div class="det-item"><label>Breed</label><span><%= listing.breed %></span></div>
+            <div class="det-item"><label>Age</label><span><%= listing.age %> <%= listing.ageUnit %></span></div>
+            <div class="det-item"><label>Gender</label><span><%= listing.gender %></span></div>
+            <% if(listing.color){ %><div class="det-item"><label>Color</label><span><%= listing.color %></span></div><% } %>
+            <div class="det-item"><label>Views</label><span><%= listing.views||0 %></span></div>
+          </div>
+
+          <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--g500);margin:.9rem 0 .6rem;">Health</div>
+          <div class="health-row">
+            <span class="hchip <%= listing.vaccinated?'yes':'no' %>"><i class="fas fa-syringe"></i> <%= listing.vaccinated?'Vaccinated':'Not Vaccinated' %></span>
+            <span class="hchip <%= listing.dewormed?'yes':'no' %>"><i class="fas fa-shield-virus"></i> <%= listing.dewormed?'Dewormed':'Not Dewormed' %></span>
+            <span class="hchip <%= listing.pedigree?'yes':'no' %>"><i class="fas fa-certificate"></i> <%= listing.pedigree?'Pedigree':'No Pedigree' %></span>
+          </div>
+
+          <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;letter-spacing:.5px;color:var(--g500);margin:.9rem 0 .6rem;">Description</div>
+          <div class="desc-box"><%= listing.description %></div>
+
+          <div style="margin-top:.9rem;font-size:.78rem;color:var(--g500);">
+            <i class="fas fa-calendar"></i> Posted <%= new Date(listing.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'long',year:'numeric'}) %>
+          </div>
+
+          <!-- OWNER CONTROLS ONLY -->
+          <% if(isOwner){ %>
+          <div class="hr"></div>
+          <div style="background:#fff8e1;border-radius:var(--r);padding:.9rem 1rem;border-left:3px solid var(--yellow);">
+            <div style="font-size:.8rem;font-weight:700;color:#e65100;margin-bottom:.65rem;"><i class="fas fa-user-shield"></i> Your ad — only you can see these controls</div>
+            <div style="display:flex;gap:.5rem;flex-wrap:wrap;align-items:center;">
+              <a href="/my-ads/<%= listing._id %>/edit" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i> Edit Ad</a>
+              <form action="/my-ads/<%= listing._id %>/mark" method="POST" style="margin:0;">
+                <select name="status" class="fc" style="padding:.35rem .6rem;font-size:.78rem;height:auto;display:inline-block;width:auto;" onchange="this.form.submit()">
+                  <option value="Active"  <%= listing.status==='Active' ?'selected':'' %>>✅ Active</option>
+                  <option value="Sold"    <%= listing.status==='Sold'   ?'selected':'' %>>💰 Mark as Sold</option>
+                  <option value="Adopted" <%= listing.status==='Adopted'?'selected':'' %>>🤍 Mark as Adopted</option>
+                </select>
+              </form>
+              <form action="/my-ads/<%= listing._id %>/delete" method="POST" style="margin:0;">
+                <button type="submit" class="btn btn-red btn-sm" data-confirm="Delete this ad permanently?"><i class="fas fa-trash"></i> Delete</button>
+              </form>
+            </div>
+          </div>
+          <% } %>
+        </div>
+
+        <!-- Similar -->
+        <% if(similar.length > 0){ %>
+        <div style="margin-top:1.5rem;">
+          <div class="sec-title"><i class="fas fa-paw"></i> Similar Pets</div>
+          <div class="grid">
+            <% similar.slice(0,4).forEach(s=>{ %>
+            <a href="/pets/<%= s._id %>" style="text-decoration:none;display:contents;">
+              <div class="lcard">
+                <div class="lcard-img">
+                  <% if(s.images&&s.images[0]){ %><img src="/uploads/<%= s.images[0] %>" alt="<%= s.title %>" loading="lazy">
+                  <% }else{ %><%= CAT_EMOJI[s.category]||'🐾' %><% } %>
+                  <span class="ttag ttag-<%= s.listingType.toLowerCase() %>"><%= s.listingType %></span>
+                </div>
+                <div class="lcard-body">
+                  <div class="lcard-price <%= s.priceType==='Free'?'free':'' %>"><%= s.priceType==='Free'?'🤍 FREE':'₹'+s.price.toLocaleString('en-IN') %></div>
+                  <div class="lcard-title"><%= s.title %></div>
+                  <div class="lcard-meta"><span><i class="fas fa-map-marker-alt"></i> <%= s.city %></span></div>
+                </div>
+              </div>
+            </a>
+            <% }) %>
+          </div>
+        </div>
+        <% } %>
+      </div>
+
+      <!-- ── RIGHT — Seller Box ── -->
+      <div class="seller-box">
+        <div class="sbox-head">
+          <div class="sbox-type"><%= listing.listingType==='Adopt'?'Adoption':'Asking Price' %></div>
+          <div class="sbox-price"><%= listing.priceType==='Free'?'FREE':'₹'+listing.price.toLocaleString('en-IN') %></div>
+        </div>
+        <div class="sbox-body">
+
+          <div class="sinfo">
+            <div class="savatar"><%= listing.seller.name.charAt(0).toUpperCase() %></div>
+            <div>
+              <div class="sname"><a href="/seller/<%= listing.seller._id %>" style="color:var(--g900);"><%= listing.seller.name %></a></div>
+              <div class="ssince"><% if(listing.seller.city){ %><i class="fas fa-map-marker-alt"></i> <%= listing.seller.city %><% if(listing.seller.state){ %>, <%= listing.seller.state %><% } %><% } %></div>
+              <div class="ssince"><i class="fas fa-calendar"></i> Since <%= new Date(listing.seller.createdAt).toLocaleDateString('en-IN',{month:'short',year:'numeric'}) %></div>
+            </div>
+          </div>
+
+          <% if(!isOwner){ %>
+            <% if(currentUser){ %>
+              <% if(listing.seller.phone){ %>
+              <div class="sphone"><i class="fas fa-phone"></i> <%= listing.seller.phone %></div>
+              <% } %>
+
+              <button class="wbtn btn btn-gray btn-block mb1"
+                data-id="<%= listing._id %>"
+                style="width:100%;border-radius:var(--r2);height:auto;position:static;box-shadow:none;justify-content:center;gap:.5rem;display:flex;align-items:center;">
+                <i class="<%= inWishlist?'fas':'far' %> fa-heart" style="color:<%= inWishlist?'var(--red)':'inherit' %>"></i>
+                <%= inWishlist ? 'Saved to Wishlist' : 'Save to Wishlist' %>
+              </button>
+
+              <% if(listing.status==='Active'){ %>
+              <div class="chat-box">
+                <h4><i class="fas fa-comment-dots"></i> Message Seller</h4>
+                <form action="/chat/start" method="POST">
+                  <input type="hidden" name="listingId" value="<%= listing._id %>">
+                  <input type="hidden" name="sellerId"  value="<%= listing.seller._id %>">
+                  <textarea name="text" placeholder="Hi! Is this pet still available?" required></textarea>
+                  <button type="submit" class="btn btn-primary btn-block mt1"><i class="fas fa-paper-plane"></i> Send Message</button>
+                </form>
+              </div>
+              <% } else { %>
+              <div style="background:var(--g100);border-radius:var(--r);padding:.85rem;text-align:center;color:var(--g500);font-size:.85rem;">
+                <i class="fas fa-times-circle"></i> This pet is no longer available
+              </div>
+              <% } %>
+
+            <% } else { %>
+              <div class="login-prompt">
+                <div style="font-size:2.5rem;margin-bottom:.5rem;">🔒</div>
+                <p>Login to see seller's phone number and send messages</p>
+                <a href="/login" class="btn btn-primary btn-block"><i class="fas fa-sign-in-alt"></i> Login to Contact</a>
+                <div style="margin-top:.6rem;font-size:.8rem;color:var(--g500);">New? <a href="/signup" style="color:var(--orange);font-weight:700;">Create Free Account</a></div>
+              </div>
+            <% } %>
+          <% } else { %>
+            <div style="background:#e3f2fd;border-radius:var(--r);padding:.85rem;text-align:center;font-size:.85rem;color:#1565C0;">
+              <i class="fas fa-info-circle"></i> This is your listing. Use Edit/Delete buttons on the left.
+            </div>
+          <% } %>
+
+          <% if(sellerMore.length > 0){ %>
+          <div class="hr"></div>
+          <div style="font-size:.75rem;font-weight:700;text-transform:uppercase;color:var(--g500);margin-bottom:.6rem;">More from <%= listing.seller.name.split(' ')[0] %></div>
+          <% sellerMore.forEach(s=>{ %>
+          <a href="/pets/<%= s._id %>" style="display:flex;gap:.6rem;align-items:center;padding:.5rem 0;border-bottom:1px solid var(--g200);text-decoration:none;">
+            <div style="width:44px;height:38px;border-radius:var(--r2);overflow:hidden;flex-shrink:0;background:var(--g100);display:flex;align-items:center;justify-content:center;font-size:1.1rem;">
+              <% if(s.images&&s.images[0]){ %><img src="/uploads/<%= s.images[0] %>" style="width:100%;height:100%;object-fit:cover;"><% }else{ %><%= CAT_EMOJI[s.category]||'🐾' %><% } %>
+            </div>
+            <div style="flex:1;min-width:0;">
+              <div style="font-size:.8rem;font-weight:600;color:var(--g900);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;"><%= s.title %></div>
+              <div style="font-size:.75rem;font-weight:800;color:var(--primary);"><%= s.priceType==='Free'?'FREE':'₹'+s.price.toLocaleString('en-IN') %></div>
+            </div>
+          </a>
+          <% }) %>
+          <a href="/seller/<%= listing.seller._id %>" class="btn btn-gray btn-block btn-sm" style="margin-top:.6rem;">View All Ads</a>
+          <% } %>
+
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script src="/js/main.js"></script>
+<script>
+const imgs = <%- JSON.stringify(listing.images && listing.images.length > 0 ? listing.images.map(i=>'/uploads/'+i) : []) %>;
+let currentIdx = 0;
+
+function setGallery(idx) {
+  if (!imgs.length) return;
+  currentIdx = ((idx % imgs.length) + imgs.length) % imgs.length;
+  const mi = document.getElementById('galMainImg');
+  if (mi) mi.src = imgs[currentIdx];
+  document.querySelectorAll('.gdot').forEach((d,i) => d.classList.toggle('on', i===currentIdx));
+  document.querySelectorAll('.thumb').forEach((t,i) => t.classList.toggle('on', i===currentIdx));
+}
+
+const gp = document.getElementById('galPrevBtn');
+const gn = document.getElementById('galNextBtn');
+if (gp) gp.addEventListener('click', e => { e.stopPropagation(); setGallery(currentIdx-1); });
+if (gn) gn.addEventListener('click', e => { e.stopPropagation(); setGallery(currentIdx+1); });
+document.querySelectorAll('.gdot').forEach(d => d.addEventListener('click', () => setGallery(+d.dataset.i)));
+document.querySelectorAll('.thumb').forEach(t => t.addEventListener('click', () => setGallery(+t.dataset.i)));
+
+// Lightbox
+const lb    = document.getElementById('lightbox');
+const lbImg = document.getElementById('lbImg');
+const lbCtr = document.getElementById('lbCounter');
+
+function openLightbox(idx) {
+  if (!imgs.length) return;
+  currentIdx = idx;
+  lbImg.src  = imgs[currentIdx];
+  if (lbCtr) lbCtr.textContent = imgs.length > 1 ? (currentIdx+1)+' / '+imgs.length : '';
+  lb.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeLightbox() { lb.classList.remove('open'); document.body.style.overflow = ''; }
+function lbNav(dir) {
+  currentIdx = ((currentIdx+dir) % imgs.length + imgs.length) % imgs.length;
+  lbImg.src  = imgs[currentIdx];
+  if (lbCtr) lbCtr.textContent = imgs.length > 1 ? (currentIdx+1)+' / '+imgs.length : '';
+  setGallery(currentIdx);
+}
+
+document.getElementById('galMainImg') && document.getElementById('galMainImg').addEventListener('click', () => openLightbox(currentIdx));
+document.querySelector('.gal-expand') && document.querySelector('.gal-expand').addEventListener('click', () => openLightbox(currentIdx));
+document.getElementById('lbClose') && document.getElementById('lbClose').addEventListener('click', closeLightbox);
+document.getElementById('lbPrev')  && document.getElementById('lbPrev').addEventListener('click', () => lbNav(-1));
+document.getElementById('lbNext')  && document.getElementById('lbNext').addEventListener('click', () => lbNav(1));
+lb && lb.addEventListener('click', e => { if(e.target===lb) closeLightbox(); });
+document.addEventListener('keydown', e => {
+  if (!lb || !lb.classList.contains('open')) return;
+  if (e.key==='ArrowLeft')  lbNav(-1);
+  if (e.key==='ArrowRight') lbNav(1);
+  if (e.key==='Escape')     closeLightbox();
+});
+</script>
+</body>
+</html>

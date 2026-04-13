@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Wishlist — PetConnect</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<%- include('../partials/nav') %>
+<%- include('../partials/flash') %>
+
+<div class="container">
+  <div class="page">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem;">
+      <div class="page-title" style="margin-bottom:0;"><i class="fas fa-heart" style="color:var(--red);"></i> My Wishlist</div>
+      <a href="/" class="btn btn-gray btn-sm"><i class="fas fa-search"></i> Browse More Pets</a>
+    </div>
+
+    <% if(listings.length===0){ %>
+    <div class="card-white empty">
+      <div class="ei">❤️</div>
+      <h3>Your wishlist is empty</h3>
+      <p>Tap the heart icon on any listing to save it here!</p>
+      <a href="/" class="btn btn-orange">Browse Pets</a>
+    </div>
+    <% }else{ %>
+    <div class="grid">
+      <% listings.forEach(l=>{ %>
+      <a href="/pets/<%= l._id %>" style="text-decoration:none;display:contents;">
+        <div class="lcard">
+          <div class="lcard-img">
+            <% if(l.images&&l.images[0]){ %><img src="/uploads/<%= l.images[0] %>" alt="<%= l.title %>" loading="lazy">
+            <% }else{ %><%= CAT_EMOJI[l.category]||'🐾' %><% } %>
+            <span class="ttag ttag-<%= l.listingType.toLowerCase() %>"><%= l.listingType %></span>
+            <button class="wbtn on" data-id="<%= l._id %>" onclick="event.preventDefault()"><i class="fas fa-heart"></i></button>
+          </div>
+          <div class="lcard-body">
+            <div class="lcard-price <%= l.priceType==='Free'?'free':'' %>">
+              <%= l.priceType==='Free'?'🤍 FREE':'₹'+l.price.toLocaleString('en-IN') %>
+            </div>
+            <div class="lcard-title"><%= l.title %></div>
+            <div class="lcard-tags">
+              <span class="ltag ltag-b"><%= l.breed %></span>
+              <span class="ltag ltag-o"><%= l.age %> <%= l.ageUnit %></span>
+            </div>
+            <div class="lcard-meta">
+              <span><i class="fas fa-map-marker-alt"></i> <%= l.city %></span>
+              <span class="badge b-<%= l.status.toLowerCase() %>"><%= l.status %></span>
+            </div>
+          </div>
+        </div>
+      </a>
+      <% }) %>
+    </div>
+    <% } %>
+  </div>
+</div>
+
+<script src="/js/main.js"></script>
+</body>
+</html>

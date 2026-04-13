@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login — PetConnect</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<%- include('../partials/flash') %>
+<div class="auth-page">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <a href="/" class="logo" style="justify-content:center;font-size:1.8rem;">Pet<span>Connect</span></a>
+      <p>India's trusted pet marketplace</p>
+    </div>
+
+    <h2 style="font-size:1.1rem;font-weight:700;margin-bottom:1.25rem;color:var(--g900);">Sign in to your account</h2>
+
+    <form action="/login" method="POST">
+      <div class="fg">
+        <label class="fl"><i class="fas fa-envelope"></i> Email Address</label>
+        <input type="email" name="email" class="fc" placeholder="you@example.com" required autofocus>
+      </div>
+      <div class="fg">
+        <label class="fl"><i class="fas fa-lock"></i> Password</label>
+        <input type="password" name="password" class="fc" placeholder="Your password" required>
+      </div>
+      <div style="text-align:right;margin-bottom:1rem;">
+        <a href="/forgot-password" style="font-size:.82rem;color:var(--primary);font-weight:600;">Forgot Password?</a>
+      </div>
+      <button type="submit" class="btn btn-primary btn-block btn-lg">
+        <i class="fas fa-sign-in-alt"></i> Login
+      </button>
+    </form>
+
+    <div class="hr"></div>
+    <p style="text-align:center;font-size:.88rem;color:var(--g500);">
+      Don't have an account?
+      <a href="/signup" style="color:var(--orange);font-weight:700;">Create Account</a>
+    </p>
+  </div>
+</div>
+<script src="/js/main.js"></script>
+</body>
+</html>

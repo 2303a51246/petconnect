@@ -1,0 +1,46 @@
+<nav class="navbar">
+  <div class="nb">
+    <a href="/" class="logo">Pet<span>Connect</span></a>
+
+    <form class="nb-search" action="/" method="GET">
+      <input type="text" name="q" placeholder="Search breed, pet, city..." value="<%= typeof filters!=='undefined'&&filters.q?filters.q:'' %>">
+      <button type="submit"><i class="fas fa-search"></i></button>
+    </form>
+
+    <div class="nb-links">
+      <% if(currentUser){ %>
+        <a href="/chat" class="nl"><i class="fas fa-comment-dots"></i><span>Chat</span></a>
+        <a href="/wishlist" class="nl"><i class="fas fa-heart"></i><span>Wishlist</span></a>
+        <a href="/my-ads" class="nl"><i class="fas fa-list-alt"></i><span>My Ads</span></a>
+        <a href="/account" class="nl"><i class="fas fa-user-circle"></i><span><%= currentUser.name.split(' ')[0] %></span></a>
+        <% if(isAdmin){ %>
+          <a href="/admin" class="nl" style="color:#FFD600;"><i class="fas fa-shield-alt"></i><span>Admin</span></a>
+        <% } %>
+        <form action="/logout" method="POST" style="margin:0;">
+          <button type="submit" class="btn-gray btn btn-sm" style="border-radius:20px;">Logout</button>
+        </form>
+      <% }else{ %>
+        <a href="/login" class="nl"><i class="fas fa-sign-in-alt"></i><span>Login</span></a>
+        <a href="/signup" class="nl"><i class="fas fa-user-plus"></i><span>Sign Up</span></a>
+      <% } %>
+      <a href="<%= currentUser?'/post-ad':'/login' %>" class="btn-post-nav">
+        <i class="fas fa-plus"></i> POST AD
+      </a>
+    </div>
+  </div>
+</nav>
+
+<div class="catbar">
+  <div class="catbar-inner">
+    <a href="/" class="ci <%= !( typeof filters!=='undefined'&&filters.category)?'on':'' %>"><span class="ce">🐾</span>All</a>
+    <a href="/?category=Dog"     class="ci <%= typeof filters!=='undefined'&&filters.category==='Dog'    ?'on':'' %>"><span class="ce">🐕</span>Dogs</a>
+    <a href="/?category=Cat"     class="ci <%= typeof filters!=='undefined'&&filters.category==='Cat'    ?'on':'' %>"><span class="ce">🐈</span>Cats</a>
+    <a href="/?category=Bird"    class="ci <%= typeof filters!=='undefined'&&filters.category==='Bird'   ?'on':'' %>"><span class="ce">🐦</span>Birds</a>
+    <a href="/?category=Fish"    class="ci <%= typeof filters!=='undefined'&&filters.category==='Fish'   ?'on':'' %>"><span class="ce">🐠</span>Fish</a>
+    <a href="/?category=Rabbit"  class="ci <%= typeof filters!=='undefined'&&filters.category==='Rabbit' ?'on':'' %>"><span class="ce">🐇</span>Rabbits</a>
+    <a href="/?category=Hamster" class="ci <%= typeof filters!=='undefined'&&filters.category==='Hamster'?'on':'' %>"><span class="ce">🐹</span>Hamsters</a>
+    <a href="/?category=Reptile" class="ci <%= typeof filters!=='undefined'&&filters.category==='Reptile'?'on':'' %>"><span class="ce">🦎</span>Reptiles</a>
+    <a href="/?listingType=Adopt" class="ci"><span class="ce">🤍</span>Free Adopt</a>
+    <a href="/budget" class="ci"><span class="ce">💰</span>By Budget</a>
+  </div>
+</div>

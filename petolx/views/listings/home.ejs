@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= title %></title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<%- include('../partials/nav') %>
+<%- include('../partials/flash') %>
+
+<% const hasFilter = filters.q||filters.category||filters.city||filters.minPrice||filters.maxPrice||filters.listingType; %>
+
+<% if(!hasFilter){ %>
+<!-- Hero Banner -->
+<div class="hero">
+  <h1>🐾 Buy, Sell & Adopt Pets Near You</h1>
+  <p>India's largest pet marketplace — real owners, real pets, real deals</p>
+  <form class="hero-search" action="/" method="GET">
+    <input type="text" name="q" placeholder="Search by breed, pet name or city...">
+    <button type="submit"><i class="fas fa-search"></i> Search</button>
+  </form>
+</div>
+
+<!-- Category Cards -->
+<div class="container" style="margin-top:1.5rem;">
+  <div class="sec-title"><i class="fas fa-th-large" style="color:var(--orange);"></i> Browse by Category</div>
+  <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:.75rem;margin-bottom:2rem;">
+    <% CATS.forEach(c=>{ %>
+    <a href="/?category=<%= c %>" style="text-decoration:none;">
+      <div style="background:#fff;border-radius:var(--r);padding:1rem .5rem;text-align:center;box-shadow:var(--shadow0);border:1.5px solid var(--g200);cursor:pointer;transition:var(--tr);" onmouseover="this.style.borderColor='var(--primary)'" onmouseout="this.style.borderColor='var(--g200)'">
+        <div style="font-size:2rem;margin-bottom:.35rem;"><%= CAT_EMOJI[c] %></div>
+        <div style="font-size:.78rem;font-weight:700;color:var(--g900);"><%= c %>s</div>
+        <div style="font-size:.68rem;color:var(--g500);margin-top:.1rem;"><%= catMap[c]||0 %> ads</div>
+      </div>
+    </a>
+    <% }) %>
+  </div>
+</div>
+
+<% if(featured.length>0){ %>
+<!-- Featured -->
+<div class="container">
+  <div class="sec-title"><i class="fas fa-star" style="color:var(--yellow);"></i> Featured Ads</div>
+  <div class="grid" style="margin-bottom:2rem;">
+    <% featured.forEach(l=>{ %>
+    <a href="/pets/<%= l._id %>" style="text-decoration:none;display:contents;">
+      <div class="lcard">
+        <div class="lcard-img">
+          <% if(l.images&&l.images[0]){ %><img src="/uploads/<%= l.images[0] %>" alt="<%= l.title %>" loading="lazy">
+          <% }else{ %><%= CAT_EMOJI[l.category]||'🐾' %><% } %>
+          <span class="ftag">⭐ Featured</span>
+          <span class="ttag ttag-<%= l.listingType.toLowerCase() %>"><%= l.listingType %></span>
+          <% if(currentUser){ %>
+          <button class="wbtn" data-id="<%= l._id %>" onclick="event.preventDefault()"><i class="far fa-heart"></i></button>
+          <% } %>
+        </div>
+        <div class="lcard-body">
+          <div class="lcard-price <%= l.priceType==='Free'?'free':'' %>">
+            <%= l.priceType==='Free'?'🤍 FREE':'₹'+l.price.toLocaleString('en-IN') %>
+            <% if(l.priceType==='Negotiable'){ %><span style="font-size:.68rem;color:var(--g500);font-weight:600;"> Nego</span><% } %>
+          </div>
+          <div class="lcard-title"><%= l.title %></div>
+          <div class="lcard-tags">
+            <span class="ltag ltag-b"><%= l.breed %></span>
+            <% if(l.vaccinated){ %><span class="ltag ltag-g">💉 Vacc</span><% } %>
+          </div>
+          <div class="lcard-meta">
+            <span><i class="fas fa-map-marker-alt"></i> <%= l.city %></span>
+            <span><%= new Date(l.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short'}) %></span>
+          </div>
+        </div>
+      </div>
+    </a>
+    <% }) %>
+  </div>
+</div>
+<% } %>
+<% } %><!-- end !hasFilter -->
+
+<!-- Main Browse Section -->
+<div class="container">
+  <div class="page">
+    <div class="two-col">
+
+      <!-- Filter Sidebar -->
+      <aside class="fside">
+        <div class="fside-head">
+          <span><i class="fas fa-filter"></i> Filters</span>
+          <a href="/">Clear All</a>
+        </div>
+        <form action="/" method="GET">
+          <% if(filters.q){ %><input type="hidden" name="q" value="<%= filters.q %>"><% } %>
+
+          <div class="fsec">
+            <h4>Listing Type</h4>
+            <label><input type="radio" name="listingType" value="" <%= !filters.listingType?'checked':'' %>> All</label>
+            <label><input type="radio" name="listingType" value="Sell" <%= filters.listingType==='Sell'?'checked':'' %>> For Sale</label>
+            <label><input type="radio" name="listingType" value="Adopt" <%= filters.listingType==='Adopt'?'checked':'' %>> Free Adoption</label>
+          </div>
+
+          <div class="fsec">
+            <h4>Category</h4>
+            <% CATS.forEach(c=>{ %>
+            <label><input type="radio" name="category" value="<%= c %>" <%= filters.category===c?'checked':'' %>> <%= CAT_EMOJI[c] %> <%= c %></label>
+            <% }) %>
+          </div>
+
+          <div class="fsec">
+            <h4>Price Range (₹)</h4>
+            <div class="price-row">
+              <input type="number" name="minPrice" placeholder="Min" value="<%= filters.minPrice||'' %>">
+              <input type="number" name="maxPrice" placeholder="Max" value="<%= filters.maxPrice||'' %>">
+            </div>
+          </div>
+
+          <div class="fsec">
+            <h4>City</h4>
+            <input type="text" name="city" class="fc" style="font-size:.82rem;" placeholder="e.g. Mumbai" value="<%= filters.city||'' %>">
+          </div>
+
+          <button type="submit" class="filter-apply"><i class="fas fa-check"></i> Apply Filters</button>
+        </form>
+      </aside>
+
+      <!-- Listings -->
+      <div>
+        <div class="list-head">
+          <h2>
+            <% if(hasFilter){ %>
+              <strong><%= pagination.count %></strong> result<%= pagination.count!==1?'s':'' %>
+              <% if(filters.category){ %> for <strong><%= filters.category %>s</strong><% } %>
+              <% if(filters.city){ %> in <strong><%= filters.city %></strong><% } %>
+              <% if(filters.listingType){ %> — <strong><%= filters.listingType %></strong><% } %>
+            <% }else{ %>
+              All Listings <span style="color:var(--g500);font-weight:500;">(<%= pagination.count %> ads)</span>
+            <% } %>
+          </h2>
+          <form action="/" method="GET" style="margin:0;">
+            <% if(filters.q){ %><input type="hidden" name="q" value="<%= filters.q %>"><% } %>
+            <% if(filters.category){ %><input type="hidden" name="category" value="<%= filters.category %>"><% } %>
+            <% if(filters.city){ %><input type="hidden" name="city" value="<%= filters.city %>"><% } %>
+            <% if(filters.listingType){ %><input type="hidden" name="listingType" value="<%= filters.listingType %>"><% } %>
+            <select name="sort" class="sort-sel" onchange="this.form.submit()">
+              <option value="newest" <%= filters.sort==='newest'?'selected':'' %>>Newest First</option>
+              <option value="price_asc" <%= filters.sort==='price_asc'?'selected':'' %>>Price: Low → High</option>
+              <option value="price_desc" <%= filters.sort==='price_desc'?'selected':'' %>>Price: High → Low</option>
+            </select>
+          </form>
+        </div>
+
+        <% if(listings.length===0){ %>
+        <div class="card-white empty">
+          <div class="ei">🔍</div>
+          <h3>No ads found</h3>
+          <p>Try different filters or be the first to post!</p>
+          <div style="display:flex;gap:.5rem;justify-content:center;flex-wrap:wrap;">
+            <a href="/" class="btn btn-gray btn-sm">Clear Filters</a>
+            <a href="/post-ad" class="btn btn-orange"><i class="fas fa-plus"></i> Post Ad</a>
+          </div>
+        </div>
+        <% }else{ %>
+        <div class="grid">
+          <% listings.forEach(l=>{ %>
+          <a href="/pets/<%= l._id %>" style="text-decoration:none;display:contents;">
+            <div class="lcard">
+              <div class="lcard-img">
+                <% if(l.images&&l.images[0]){ %><img src="/uploads/<%= l.images[0] %>" alt="<%= l.title %>" loading="lazy">
+                <% }else{ %><%= CAT_EMOJI[l.category]||'🐾' %><% } %>
+                <% if(l.featured){ %><span class="ftag">⭐ Featured</span><% } %>
+                <span class="ttag ttag-<%= l.listingType.toLowerCase() %>"><%= l.listingType %></span>
+                <% if(currentUser){ %>
+                <button class="wbtn" data-id="<%= l._id %>" onclick="event.preventDefault()"><i class="far fa-heart"></i></button>
+                <% } %>
+              </div>
+              <div class="lcard-body">
+                <div class="lcard-price <%= l.priceType==='Free'?'free':'' %>">
+                  <%= l.priceType==='Free'?'🤍 FREE':'₹'+l.price.toLocaleString('en-IN') %>
+                  <% if(l.priceType==='Negotiable'){ %><span style="font-size:.68rem;color:var(--g500);"> Nego</span><% } %>
+                </div>
+                <div class="lcard-title"><%= l.title %></div>
+                <div class="lcard-tags">
+                  <span class="ltag ltag-b"><%= l.breed %></span>
+                  <span class="ltag ltag-o"><%= l.age %> <%= l.ageUnit %></span>
+                  <% if(l.vaccinated){ %><span class="ltag ltag-g">Vaccinated</span><% } %>
+                </div>
+                <div class="lcard-meta">
+                  <span><i class="fas fa-map-marker-alt"></i> <%= l.city %>, <%= l.state %></span>
+                  <span><i class="fas fa-eye"></i> <%= l.views||0 %></span>
+                </div>
+              </div>
+            </div>
+          </a>
+          <% }) %>
+        </div>
+
+        <% if(pagination.total>1){ %>
+        <div class="pages">
+          <% for(let i=1;i<=pagination.total;i++){ %>
+          <a href="?page=<%= i %><%= filters.category?'&category='+filters.category:'' %><%= filters.q?'&q='+encodeURIComponent(filters.q):'' %><%= filters.city?'&city='+filters.city:'' %><%= filters.sort?'&sort='+filters.sort:'' %><%= filters.listingType?'&listingType='+filters.listingType:'' %>"
+            class="pgbtn <%= pagination.current===i?'on':'' %>"><%= i %></a>
+          <% } %>
+        </div>
+        <% } %>
+        <% } %>
+      </div><!-- /listings -->
+    </div><!-- /two-col -->
+  </div>
+</div>
+
+<!-- Footer -->
+<footer style="background:var(--primary);color:rgba(255,255,255,.6);padding:2rem 0;margin-top:2rem;">
+  <div class="container" style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:1rem;">
+    <div>
+      <div class="logo" style="font-size:1.3rem;margin-bottom:.3rem;">Pet<span>Connect</span></div>
+      <p style="font-size:.78rem;">India's trusted pet marketplace</p>
+    </div>
+    <div style="display:flex;gap:1.5rem;font-size:.82rem;flex-wrap:wrap;">
+      <a href="/" style="color:rgba(255,255,255,.6);">Home</a>
+      <a href="/post-ad" style="color:rgba(255,255,255,.6);">Post Ad</a>
+      <a href="/budget" style="color:rgba(255,255,255,.6);">Budget</a>
+      <a href="/wishlist" style="color:rgba(255,255,255,.6);">Wishlist</a>
+    </div>
+    <div style="font-size:.75rem;">© 2024 PetConnect</div>
+  </div>
+</footer>
+
+<script src="/js/main.js"></script>
+</body>
+</html>

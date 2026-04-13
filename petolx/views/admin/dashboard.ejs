@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin — PetConnect</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<%- include('../partials/nav') %>
+<%- include('../partials/flash') %>
+<div class="container">
+  <div class="page">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem;">
+      <div class="page-title" style="margin-bottom:0;"><i class="fas fa-shield-alt" style="color:var(--orange);"></i> Admin Dashboard</div>
+      <div style="display:flex;gap:.5rem;">
+        <a href="/admin/listings" class="btn btn-gray btn-sm">All Listings</a>
+        <a href="/admin/users" class="btn btn-gray btn-sm">All Users</a>
+      </div>
+    </div>
+
+    <div class="stat-row mb3">
+      <div class="stat-box"><div class="val"><%= totalListings %></div><div class="lbl">Total Ads</div></div>
+      <div class="stat-box" style="border-top-color:var(--green);"><div class="val" style="color:var(--green);"><%= active %></div><div class="lbl">Active Ads</div></div>
+      <div class="stat-box" style="border-top-color:var(--orange);"><div class="val" style="color:var(--orange);"><%= totalUsers %></div><div class="lbl">Users</div></div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;margin-bottom:1.25rem;">
+      <div class="card-white"><div style="font-weight:700;font-size:.82rem;text-transform:uppercase;color:var(--g500);margin-bottom:.9rem;"><i class="fas fa-chart-pie" style="color:var(--orange);"></i> Listings by Category</div><canvas id="catChart" height="200"></canvas></div>
+      <div class="card-white"><div style="font-weight:700;font-size:.82rem;text-transform:uppercase;color:var(--g500);margin-bottom:.9rem;"><i class="fas fa-chart-bar" style="color:var(--primary);"></i> Category Counts</div><canvas id="barChart" height="200"></canvas></div>
+    </div>
+
+    <div class="card-white mb2">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.9rem;">
+        <div style="font-weight:700;font-size:.92rem;color:var(--primary);">Recent Listings</div>
+        <a href="/admin/listings" class="btn btn-gray btn-sm">View All</a>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="dtable">
+          <thead><tr><th>Title</th><th>Category</th><th>Price</th><th>Seller</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+          <tbody>
+            <% recentAds.forEach(l=>{ %>
+            <tr>
+              <td><a href="/pets/<%= l._id %>" style="font-weight:600;color:var(--primary);font-size:.82rem;"><%= l.title.substring(0,35) %><%= l.title.length>35?'...':'' %></a></td>
+              <td><%= l.category %></td>
+              <td style="font-weight:700;"><%= l.priceType==='Free'?'FREE':'₹'+l.price.toLocaleString('en-IN') %></td>
+              <td style="font-size:.82rem;"><%= l.seller?l.seller.name:'—' %></td>
+              <td><span class="badge b-<%= l.status.toLowerCase() %>"><%= l.status %></span></td>
+              <td style="font-size:.75rem;color:var(--g500);"><%= new Date(l.createdAt).toLocaleDateString('en-IN') %></td>
+              <td>
+                <div style="display:flex;gap:.3rem;">
+                  <form action="/admin/listings/<%= l._id %>/feature" method="POST" style="margin:0;"><button type="submit" class="btn btn-sm" style="background:<%= l.featured?'#fff8e1':'var(--g100)' %>;color:<%= l.featured?'#e65100':'var(--g500)' %>;padding:.3rem .6rem;"><i class="fas fa-star"></i></button></form>
+                  <form action="/admin/listings/<%= l._id %>/delete" method="POST" style="margin:0;"><button type="submit" class="btn btn-red btn-sm" style="padding:.3rem .6rem;" data-confirm="Delete this listing?"><i class="fas fa-trash"></i></button></form>
+                </div>
+              </td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="card-white">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.9rem;">
+        <div style="font-weight:700;font-size:.92rem;color:var(--primary);">Recent Users</div>
+        <a href="/admin/users" class="btn btn-gray btn-sm">View All</a>
+      </div>
+      <div style="overflow-x:auto;">
+        <table class="dtable">
+          <thead><tr><th>Name</th><th>Email</th><th>City</th><th>Role</th><th>Joined</th></tr></thead>
+          <tbody>
+            <% recentUsers.forEach(u=>{ %>
+            <tr>
+              <td><strong><%= u.name %></strong></td>
+              <td style="font-size:.82rem;color:var(--g500);"><%= u.email %></td>
+              <td><%= u.city||'—' %></td>
+              <td><span style="background:<%= u.role==='admin'?'#fff3e0':'#e8f5e9' %>;color:<%= u.role==='admin'?'#e65100':'#2e7d32' %>;padding:.15rem .5rem;border-radius:20px;font-size:.7rem;font-weight:800;"><%= u.role %></span></td>
+              <td style="font-size:.75rem;color:var(--g500);"><%= new Date(u.createdAt).toLocaleDateString('en-IN') %></td>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="/js/main.js"></script>
+<script>
+const cd=<%- JSON.stringify(catStats) %>;
+new Chart(document.getElementById('catChart'),{type:'doughnut',data:{labels:cd.map(d=>d._id),datasets:[{data:cd.map(d=>d.count),backgroundColor:['#002F34','#FF7F00','#00A877','#23E5DB','#FFD600','#E53935','#9c27b0','#2196f3','#ff5722'],borderWidth:3,borderColor:'#fff'}]},options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:11}}}}}});
+new Chart(document.getElementById('barChart'),{type:'bar',data:{labels:cd.map(d=>d._id),datasets:[{label:'Ads',data:cd.map(d=>d.count),backgroundColor:'#002F34',borderRadius:6}]},options:{responsive:true,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{stepSize:1}}}}});
+</script>
+</body>
+</html>

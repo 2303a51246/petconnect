@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Ads — PetConnect</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<%- include('../partials/nav') %>
+<%- include('../partials/flash') %>
+
+<div class="container">
+  <div class="page">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem;">
+      <div class="page-title" style="margin-bottom:0;"><i class="fas fa-list-alt" style="color:var(--orange);"></i> My Ads</div>
+      <a href="/post-ad" class="btn btn-orange"><i class="fas fa-plus"></i> Post New Ad</a>
+    </div>
+
+    <!-- Stats -->
+    <div class="stat-row mb3">
+      <div class="stat-box">
+        <div class="val"><%= stats.active %></div>
+        <div class="lbl">Active Ads</div>
+      </div>
+      <div class="stat-box" style="border-top-color:var(--red);">
+        <div class="val" style="color:var(--red);"><%= stats.sold %></div>
+        <div class="lbl">Sold / Adopted</div>
+      </div>
+      <div class="stat-box" style="border-top-color:var(--green);">
+        <div class="val" style="color:var(--green);"><%= stats.views %></div>
+        <div class="lbl">Total Views</div>
+      </div>
+    </div>
+
+    <% if(listings.length===0){ %>
+    <div class="card-white empty">
+      <div class="ei">📭</div>
+      <h3>No ads posted yet</h3>
+      <p>Post your first ad and reach thousands of pet lovers!</p>
+      <a href="/post-ad" class="btn btn-orange"><i class="fas fa-plus"></i> Post Your First Ad</a>
+    </div>
+    <% }else{ %>
+    <% listings.forEach(l=>{ %>
+    <div class="myadcard">
+      <div class="myadthumb">
+        <% if(l.images&&l.images[0]){ %><img src="/uploads/<%= l.images[0] %>" alt="">
+        <% }else{ %><%= CAT_EMOJI[l.category]||'🐾' %><% } %>
+      </div>
+      <div class="myadinfo">
+        <div class="myadtitle"><a href="/pets/<%= l._id %>" style="color:var(--g900);"><%= l.title %></a></div>
+        <div class="myadprice"><%= l.priceType==='Free'?'FREE':'₹'+l.price.toLocaleString('en-IN') %></div>
+        <div class="myadmeta">
+          <span class="badge b-<%= l.status.toLowerCase() %>"><%= l.status %></span>
+          &nbsp;·&nbsp; <%= l.city %>, <%= l.state %>
+          &nbsp;·&nbsp; <i class="fas fa-eye"></i> <%= l.views||0 %> views
+          &nbsp;·&nbsp; <%= new Date(l.createdAt).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}) %>
+        </div>
+      </div>
+      <div class="myadactions">
+        <a href="/pets/<%= l._id %>" class="btn btn-gray btn-sm"><i class="fas fa-eye"></i> View</a>
+        <a href="/my-ads/<%= l._id %>/edit" class="btn btn-primary btn-sm"><i class="fas fa-edit"></i> Edit</a>
+        <% if(l.status==='Active'){ %>
+        <form action="/my-ads/<%= l._id %>/mark" method="POST" style="margin:0;">
+          <input type="hidden" name="status" value="Sold">
+          <button type="submit" class="btn btn-gray btn-sm" data-confirm="Mark '<%= l.title %>' as Sold?"><i class="fas fa-check"></i> Sold</button>
+        </form>
+        <% } %>
+        <form action="/my-ads/<%= l._id %>/delete" method="POST" style="margin:0;">
+          <button type="submit" class="btn btn-red btn-sm" data-confirm="Delete '<%= l.title %>' permanently? This cannot be undone."><i class="fas fa-trash"></i></button>
+        </form>
+      </div>
+    </div>
+    <% }) %>
+    <% } %>
+
+  </div>
+</div>
+
+<script src="/js/main.js"></script>
+</body>
+</html>

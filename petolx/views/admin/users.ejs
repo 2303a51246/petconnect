@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>All Users — Admin PetConnect</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+</head>
+<body>
+<%- include('../partials/nav') %>
+<%- include('../partials/flash') %>
+<div class="container">
+  <div class="page">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem;">
+      <div class="page-title" style="margin-bottom:0;"><i class="fas fa-users"></i> All Users (<%= users.length %>)</div>
+      <a href="/admin" class="btn btn-gray btn-sm"><i class="fas fa-arrow-left"></i> Dashboard</a>
+    </div>
+    <div class="card-white" style="overflow-x:auto;">
+      <table class="dtable">
+        <thead><tr><th>User</th><th>Email</th><th>Phone</th><th>Location</th><th>Ads</th><th>Role</th><th>Joined</th><th>Action</th></tr></thead>
+        <tbody>
+          <% if(users.length===0){ %><tr><td colspan="8" style="text-align:center;padding:2rem;color:var(--g500);">No users.</td></tr><% } %>
+          <% users.forEach(u=>{ %>
+          <tr>
+            <td>
+              <div style="display:flex;align-items:center;gap:.6rem;">
+                <div style="width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--primary),var(--green));display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;font-size:.85rem;flex-shrink:0;"><%= u.name.charAt(0).toUpperCase() %></div>
+                <strong style="font-size:.88rem;"><%= u.name %></strong>
+              </div>
+            </td>
+            <td style="font-size:.82rem;color:var(--g500);"><%= u.email %></td>
+            <td style="font-size:.82rem;"><%= u.phone||'—' %></td>
+            <td style="font-size:.82rem;"><%= u.city||'' %><%= u.city&&u.state?', ':'' %><%= u.state||'' %><%= !u.city&&!u.state?'—':'' %></td>
+            <td style="text-align:center;font-weight:700;"><%= u.adCount||0 %></td>
+            <td><span style="background:<%= u.role==='admin'?'#fff3e0':'#e8f5e9' %>;color:<%= u.role==='admin'?'#e65100':'#2e7d32' %>;padding:.15rem .5rem;border-radius:20px;font-size:.7rem;font-weight:800;"><%= u.role %></span></td>
+            <td style="font-size:.75rem;color:var(--g500);"><%= new Date(u.createdAt).toLocaleDateString('en-IN') %></td>
+            <td>
+              <% if(currentUser&&u._id.toString()!==currentUser._id.toString()){ %>
+              <form action="/admin/users/<%= u._id %>/delete" method="POST" style="margin:0;">
+                <button type="submit" class="btn btn-red btn-sm" style="padding:.3rem .6rem;" data-confirm="Delete <%= u.name %> and all their listings?"><i class="fas fa-trash"></i></button>
+              </form>
+              <% }else{ %><span style="font-size:.75rem;color:var(--g500);">You</span><% } %>
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+<script src="/js/main.js"></script>
+</body>
+</html>
